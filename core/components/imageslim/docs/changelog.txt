@@ -1,0 +1,6 @@
+Changelog for imageSlim
+
+
+imageSlim 1.0.0-beta1
+------------------------
+Initial Version
