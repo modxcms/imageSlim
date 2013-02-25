@@ -60,11 +60,11 @@ if (isset($options)) {  // if we're being called as an output filter, set variab
 
 // process our properties
 $scale = !empty($scale) ? (float) $scale : 1;
-$convertThreshold = isset($convertThreshold) ? (float) $convertThreshold * 1024 : 0;
-$maxWidth = isset($maxWidth) ? (int) $maxWidth: 0;
-$maxHeight = isset($maxHeight) ? (int) $maxHeight: 0;
+$convertThreshold = isset($convertThreshold) && $convertThreshold !== '' ? (float) $convertThreshold * 1024 : FALSE;
+$maxWidth = isset($maxWidth) && $maxWidth !== '' ? (int) $maxWidth: 999999;
+$maxHeight = isset($maxHeight) && $maxHeight !== '' ? (int) $maxHeight: 999999;
 $phpthumbofParams = isset($phpthumbofParams) ? $phpthumbofParams : '';
-$fixAspect = isset($fixAspect) ? (boolean) $fixAspect : FALSE;
+$fixAspect = isset($fixAspect) ? (boolean) $fixAspect : TRUE;
 $remoteImages = isset($remoteImages) ? (boolean) $remoteImages : FALSE;
 !empty($q) &&   $q = (int) $q;
 $debug = isset($debug) ? (boolean) $debug : FALSE;
@@ -84,10 +84,12 @@ $dom = new DOMDocument;
 
 foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	$src = $node->getAttribute('src');
-	$file = $size = $allowedDomain = FALSE;
+	$file = $size = $isRemote = FALSE;
 	if ( preg_match('/^(?:https?:)?\/\/(.+?)\//i', $src, $matches) ) {  // if we've got a remote image to work with
+		$isRemote = $allowedDomain = TRUE;
 		$file = $src;
 		if ( $remoteImages && $modx->config['phpthumb_nohotlink_enabled'] ) {  // if nohotlink is enabled, make sure it's an allowed domain
+			$allowedDomain = FALSE;  // domains will only be allowed if they match one in phpthumb_nohotlink_valid_domains
 			for ($i=0; $i < $remoteDomainsCount && !$allowedDomain; ++$i) {
 				$allowedDomain = preg_match("/{$remoteDomains[$i]}$/i", $matches[1]);
 			}
@@ -96,7 +98,6 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$debug &&   $debugstr .= "\nsrc:$src\nDomain:{$matches[1]}\n*** Remote image not allowed. Skipping ***\n";
 			continue;
 		}
-		$allowedDomain = TRUE;  // we use this later for the convertThreshold test
 		$debug &&   $debugstr .= "\nsrc:$src\nDomain:{$matches[1]}  Allowed:$allowedDomain\n";
 	}
 	else {
@@ -134,6 +135,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 	$w = $wCss ? $wCss : $node->getAttribute('width');  // if we don't have a CSS width, get it from the width attribute
 	$h = $hCss ? $hCss : $node->getAttribute('height');
+	$debug &&   $debugstr .= "w:$w  h:$h  realw:{$size[0]}  realh:{$size[1]}  type:$type\n";
 
 	$aspectNeedsFix = FALSE;  // let's see if we need to fix a stretched image
 	if ($fixAspect && $w && $h) {
@@ -141,17 +143,27 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		if ( abs($new_ar - $ar) > 0.01 ) {  // allow a little discrepancy, but nothing crazy
 			$aspectNeedsFix = TRUE;
 			$ar = $new_ar;
+			$maxScale = min($scale, $size[0] / $w, $size[1] / $h);
+			if ($maxScale >= 1) {  // if we've got enough resolution to correct it, let's go ahead and set that up
+				$opts['w'] = round($w * $maxScale);
+				$opts['h'] = round($h * $maxScale);
+				$debug &&   $debugstr .= "++ Fixing aspect ratio. w:{$opts['w']}  h:{$opts['h']}  scale:$maxScale  zc:1\n";
+			}
+			elseif ($debug)  { $debugstr .= "!! Image stretched.  scale:$maxScale\n"; }  // otherwise we might be able to if the image gets sized down below
 		}
 	}
 
-	$debug &&   $debugstr .= "w:$w  h:$h  realw:{$size[0]}  realh:{$size[1]}  type:$type  fix aspect? " . ($aspectNeedsFix ? 'Yes' : 'No') . "\n";
-
 	$heightPlay = 0;  // used to prevent height resizing on a 1px rounding difference
-	$wMax = round( $scale * ($maxWidth ? ($w < $maxWidth ? $w : $maxWidth) : $w) );  // smaller of w or maxWidth, if we've got maxWidth
-	if ( ($w || $maxWidth) && $size[0] > $wMax ) {  // if we have a width or maxWidth and our image is too wide, let's fix it
+	if ( $w && ($w > $maxWidth || $size[0] > $w * $scale)  ||  $size[0] > $maxWidth * $scale ) {
+		$wMax = $scale * ($w ? ( $w < $maxWidth ? $w : $maxWidth ) : $maxWidth);
+		$wMax = $wMax > $size[0] ? $size[0] : $wMax;
 		$opts['w'] = $wMax;
-		$size[1] = round($wMax / $ar);
-		$aspectNeedsFix &&   $opts['h'] = $size[1];
+		$newH = $size[1] < $wMax/$ar ? $size[1] : $wMax / $ar;
+		if ($aspectNeedsFix) {
+			$opts['w'] = $wMax < $size[1]*$ar ? $wMax : $size[1] * $ar;  // reduce scale if we need to to fix a stretched image
+			$opts['h'] = $newH;
+		}
+		$size[1] = $newH;
 		$heightPlay = 1;
 		$debug &&   $debugstr .= "++ realw:$wMax  realh:{$size[1]}\n";
 		if ($maxWidth && $w > $maxWidth) {  // if we need to change the display sizing
@@ -162,11 +174,15 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 	}
 
-	$hMax = round( $scale * ($maxHeight ? ($h < $maxHeight ? $h : $maxHeight) : $h) );  // do the same for height
-	if ( ($h || $maxHeight) && $size[1] > $hMax + $heightPlay ) {
+	if ( $h && ($h > $maxHeight || $size[1] - $heightPlay > $h * $scale)  ||  $size[1] - $heightPlay > $maxHeight * $scale ) {
+		$hMax = $scale * ($h ? ( $h < $maxHeight ? $h : $maxHeight ) : $maxHeight);
+		$hMax = $hMax > $size[1] ? $size[1] : $hMax;
 		$opts['h'] = $hMax;
-		if ($aspectNeedsFix) { $opts['w'] = $hMax * $ar; }
-		else { unset($opts['w']); }  // forget about width, since height is our limiting dimension
+		if ($aspectNeedsFix)  {
+			$opts['h'] = $hMax < $size[0]/$ar ? $hMax : $size[0] / $ar;  // reduce scale if we need to to fix a stretched image
+			$opts['w'] = $opts['h'] * $ar;
+		}
+		else  { unset($opts['w']); }  // forget about width, since height is our limiting dimension
 		$debug &&   $debugstr .= "++ realh:$hMax\n";
 		if ($maxHeight && $h > $maxHeight) {
 			$h = $maxHeight;
@@ -175,6 +191,8 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$debug &&   $debugstr .= "++   w:$w  h:$h\n";
 		}
 	}
+	@$opts['w'] &&   $opts['w'] = round($opts['w']);  // round these to integers
+	@$opts['h'] &&   $opts['h'] = round($opts['h']);
 
 	if ($adjustDisplaySize) {  // ok, update our display size if we need do
 		if ($wCss) {  // if the width was in an inline style (and in px), use that
@@ -190,11 +208,11 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		else { $node->setAttribute('height', $h); }
 	}
 
-	if ($convertThreshold && $type !== 'jpeg') {
-		if ($allowedDomain) {
-			$fsize = array_change_key_case(get_headers($file, 1), CASE_LOWER);
+	if ($convertThreshold !== FALSE && $type !== 'jpeg') {
+		if ($isRemote) {
+			$fsize = @array_change_key_case(@get_headers($file, 1), CASE_LOWER);
 			if ( strcasecmp($fsize[0], 'HTTP/1.1 200 OK') !== 0 ) { $fsize = $fsize['content-length'][1]; }
-			else { $fsize = $fsize['content-length']; }
+			else { $fsize = $fsize['content-length']; }  // the file size is in a different place if it's a redirect
 		}
 		else { $fsize = @filesize($file); }
 
@@ -205,7 +223,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 
 	if (!empty($opts)) {  // have we anything to do for this lovely image?
-		$aspectNeedsFix &&   $opts['zc'] = 1;
+		$fixAspect &&  $opts['zc'] = 1;
 		if ( !isset($opts['f']) ) {  // if output file type isn't user specified...
 			$opts['f'] = ($type === 'jpeg' ? 'jpeg' : 'png');  // if it's a gif or bmp let's just make it a png, shall we?
 		}
