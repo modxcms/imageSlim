@@ -41,7 +41,7 @@
  * @property conventThreshold - (float)
  * @property maxWidth - (int)
  * @property maxHeight - (int)
- * @property phpthumbofParams - (string)
+ * @property phpthumbof - (string)
  * @property fixAspect - (boolean)
  * @property remoteImages - (boolean)
  * @property q - (int)
@@ -63,13 +63,13 @@ $scale = !empty($scale) ? (float) $scale : 1;
 $convertThreshold = isset($convertThreshold) && $convertThreshold !== '' ? (float) $convertThreshold * 1024 : FALSE;
 $maxWidth = isset($maxWidth) && $maxWidth !== '' ? (int) $maxWidth: 999999;
 $maxHeight = isset($maxHeight) && $maxHeight !== '' ? (int) $maxHeight: 999999;
-$phpthumbofParams = isset($phpthumbofParams) ? $phpthumbofParams : '';
+$phpthumbof = isset($phpthumbof) ? $phpthumbof : '';
 $fixAspect = isset($fixAspect) ? (boolean) $fixAspect : TRUE;
 $remoteImages = isset($remoteImages) ? (boolean) $remoteImages : FALSE;
 !empty($q) &&   $q = (int) $q;
 $debug = isset($debug) ? (boolean) $debug : FALSE;
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.0.0-beta1]\nscale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbofParams:$phpthumbofParams\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.0.0-beta1]\nscale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\n";
 $debug &&   $debugstr .= "Remote images:$remoteImages  allow_url_fopen:" . ini_get('allow_url_fopen') . "\n";
 
 $remoteImages = $remoteImages && ini_get('allow_url_fopen');  // remote images won't work without this setting on
@@ -117,7 +117,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	$w = $wCss = 0;  // initialize some stuff we'll need
 	$h = $hCss = 0;
 	$updateStyles = $adjustDisplaySize = FALSE;
-	parse_str($phpthumbofParams, $opts);  // add in any user-specified phpthumb parameters
+	parse_str($phpthumbof, $opts);  // add in any user-specified phpthumb parameters
 
 	$styleAttr = $node->getAttribute('style');  // check for width and height in an inline style first
 	if ($styleAttr) {

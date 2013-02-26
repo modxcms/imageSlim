@@ -35,7 +35,7 @@ Examples
 --------
 
 * As an output filter:<br>```[[*content:imageSlim]]``` or<br>```[[*someRichTextTV:imageSlim=`scale=1.5&maxWidth=800&fixAspect=1`]]```
-* As a snippet:<br>```[[imageSlim? &input=`[[*content]]` &remoteImages=`1` &phpthumbofParams=`fltr[]=gray`]]```
+* As a snippet:<br>```[[imageSlim? &input=`[[*content]]` &remoteImages=`1` &phpthumbof=`fltr[]=gray`]]```
 
 Terminology
 --------
@@ -83,7 +83,7 @@ Properties
   <td>&amp;q</td>
   <td>JPEG quality: 1 (worst) &ndash; 95 (best)</td>
   <td>75</td>
-</tr><tr><td>&amp;phpthumbofParams</td>
+</tr><tr><td>&amp;phpthumbof</td>
   <td>An optional string of parameters to pass to phpThumbOf.<br>Be careful with this one though, since phpThumbOf will be run on <i>every</i> image in the input, not just the oversized ones.<br>Certain parameters–w, h, f, q, zc–may be overridden by imageSlim depending on the image and other settings.</td>
   <td></td>
 </tr><tr><td>&amp;debug</td>

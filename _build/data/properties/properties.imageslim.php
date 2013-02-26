@@ -43,8 +43,8 @@ $properties = array(
           'lexicon' => 'imageslim:default'
           ),
     array(
-          'name' => 'phpthumbofParams',
-          'desc' => 'prop_is.phpthumbofParams_desc',
+          'name' => 'phpthumbof',
+          'desc' => 'prop_is.phpthumbof_desc',
           'type' => 'textfield',
           'options' => '',
           'value' => '',
