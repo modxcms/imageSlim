@@ -165,7 +165,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 		$size[1] = $newH;
 		$heightPlay = 1;
-		$debug &&   $debugstr .= "++ realw:$wMax  realh:{$size[1]}\n";
+		$debug &&   $debugstr .= "++(W) realw:{$opts['w']}  realh:{$size[1]}\n";
 		if ($maxWidth && $w > $maxWidth) {  // if we need to change the display sizing
 			$w = $maxWidth;
 			$h = round($maxWidth / $ar);
@@ -183,7 +183,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$opts['w'] = $opts['h'] * $ar;
 		}
 		else  { unset($opts['w']); }  // forget about width, since height is our limiting dimension
-		$debug &&   $debugstr .= "++ realh:$hMax\n";
+		$debug &&   $debugstr .= '++(H) ' . (@$opts['w'] ? $opts['w'] : '') . " realh:{$opts['h']}\n";
 		if ($maxHeight && $h > $maxHeight) {
 			$h = $maxHeight;
 			$w = round($maxHeight * $ar);
@@ -196,7 +196,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 
 	if ($adjustDisplaySize) {  // ok, update our display size if we need do
 		if ($wCss) {  // if the width was in an inline style (and in px), use that
-			$styles['width'] = $maxWidth . 'px';
+			$styles['width'] = $w . 'px';
 			$updateStyles = TRUE;
 		}
 		else { $node->setAttribute('width', $w); }
@@ -223,7 +223,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 
 	if (!empty($opts)) {  // have we anything to do for this lovely image?
-		$fixAspect &&  $opts['zc'] = 1;
+		$aspectNeedsFix &&  $opts['zc'] = 1;
 		if ( !isset($opts['f']) ) {  // if output file type isn't user specified...
 			$opts['f'] = ($type === 'jpeg' ? 'jpeg' : 'png');  // if it's a gif or bmp let's just make it a png, shall we?
 		}
