@@ -16,7 +16,7 @@ Features
 
 * Runs as a snippet or output filter, so it's fully cacheable
 * Targets only the areas you tell it to
-* Reads and writes inline styles as well as \<img\> tag width/height attributes
+* Reads and writes inline CSS as well as \<img\> tag width/height attributes (works fine with both [TinyMCE](http://modx.com/extras/package/tinymce) and [CKEditor](http://modx.com/extras/package/ckeditor))
 * Offers a variety of paramaters for controlling image size: display size, max width/height, scale (for retina images), or any combination
 * Fixes stretched images (optional)
 * Processes links to offsite images (optional)
@@ -104,7 +104,7 @@ I.S. quickly discovers that monstrous image and jumps into action.  Had no &amp;
 Notes
 -------
 
-* _CSS_ – imageSlim only works with inline CSS. If you're affecting image sizes somewhere else in your CSS, it won't see that. Also if the dimensions in the inline CSS are given in a unit other than pixels (% or em, for instance) it'll ignore those, since it'd be potentially quite involved to translated those values into pixels.
+* _CSS_ – imageSlim only works with inline CSS. If you're affecting image sizes somewhere else in your CSS, it won't see that. Also if the dimensions in the inline CSS are given in a unit other than pixels (% or em, for instance) it'll ignore those, since it'd be potentially quite involved to translate those values into pixels.
 * _Resizing_ – If imageSlim needs to change the display size of an image, it'll use the same method as the image initially had (either inline CSS or \<img\> tag attributes).
 * _Vector graphics_ – imageSlim knows better than to mess with SVG. There's no point!
 * _Caching_ - Please don't do this: ```[[!imageSlim? &input=`...`]]``` (that is, call it uncached), especially on an area which might have more than a few images.  I spent a bunch of time making imageSlim as light and efficient as possible, but phpthumb is a lumbering beast. Though phpthumb does cache its output, so after the first run it only has to regenerate images when the filename, or parameters (or resource) changes, or you go to Site > Clear Cache in the Manager.
