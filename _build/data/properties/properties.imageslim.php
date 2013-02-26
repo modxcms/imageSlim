@@ -11,7 +11,7 @@
 
 $properties = array(
     array(
-          'name' => 'conventThreshold',
+          'name' => 'convertThreshold',
           'desc' => 'prop_is.convertThreshold_desc',
           'type' => 'textfield',
           'options' => '',
