@@ -5,7 +5,7 @@ The Image Slenderizer, for MODX.
 
 Tired of clients junking up content areas and richtext TVs with enormous images?  Simply follow these 3 easy steps!
 
-1. Download from the Extras Repository (link coming).
+1. Download from the [Extras Repository](http://modx.com/extras/package/imageslim).
 2. Apply a generous helping of imageSlim&trade; to the affected area: ```[[*content:imageSlim]]```
 3. Watch that excess page weight melt away.
 
