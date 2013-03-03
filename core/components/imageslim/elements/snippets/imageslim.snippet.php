@@ -248,7 +248,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 }
 
-if ($debug) echo "<!--\n$debugstr-->\n";
+$output = str_replace('&#13;', '', substr($dom->saveXML($dom->getElementsByTagName('body')->item(0)), 6, -7) );  // strip off the <body> tags and CR characters that DOM adds (?)
+$debug &&   $output = "<!--\n$debugstr-->\n$output";
 
-// Return the output, stripping off the <body> tags and CR characters that DOM adds (?)
-return str_replace('&#13;', '', substr($dom->saveXML($dom->getElementsByTagName('body')->item(0)), 6, -7) );
+return $output;
