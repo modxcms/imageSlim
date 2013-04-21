@@ -30,13 +30,13 @@
 define('PKG_NAME','imageSlim');
 define('PKG_NAME_LOWER','imageslim');
 define('PKG_VERSION','1.0.0');
-define('PKG_RELEASE','beta1');
+define('PKG_RELEASE','pl');
 define('PKG_CATEGORY','imageSlim');
 
 /* Set package options - you can turn these on one-by-one
  * as you create the transport package
  * */
-$hasAssets = false; /* Transfer the files in the assets dir. */
+$hasAssets = true; /* Transfer the files in the assets dir. */
 $hasCore = true;   /* Transfer the files in the core dir. */
 $hasSnippets = true;
 $hasChunks = false;

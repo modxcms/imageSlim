@@ -1,6 +1,11 @@
 Changelog for imageSlim
 
+imageSlim 1.0.0-pl
+---------------------
+* uses cURL for remote images
+* adds caching of remote images and a max download time threshold
+
 
 imageSlim 1.0.0-beta1
-------------------------
+---------------------
 Initial Version

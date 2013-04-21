@@ -1,4 +1,4 @@
-imageSlim 1.0 (beta)
+imageSlim 1.0
 ===============
 
 The Image Slenderizer, for MODX.
@@ -77,8 +77,12 @@ Properties
   <td>Yes</td>
 </tr><tr>
   <td>&amp;remoteImages</td>
-  <td>Allow imageSlim to work with images from other servers.<br>Requires proper settings for allow_url_fopen in PHP and phpthumb_nohotlink_enabled and phpthumb_nohotlink_valid_domains in the MODX system settings (core > phpthumb)<br>Remote images take longer to process than local ones, obviously.</td>
+  <td>Allow imageSlim to work with images from other servers.<br>Requires cURL and proper settings for phpthumb_nohotlink_enabled and phpthumb_nohotlink_valid_domains in the MODX system settings (core > phpthumb)<br>Remote images take longer to process than local ones obviously, but imageSlim does cache them locally in assets/components/imageslim/cache/, so it's only a one-time performance hit.</td>
   <td>No</td>
+ </tr><tr>
+  <td>&amp;remoteTimeout</td>
+  <td>Maximum amount of time to allow for a remote image download.<br>Units: seconds</td>
+  <td>5</td>
 </tr><tr>
   <td>&amp;q</td>
   <td>JPEG quality: 1 (worst) &ndash; 95 (best)</td>

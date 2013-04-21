@@ -4,7 +4,6 @@
  *
  * Copyright 2013 Jason Grant <dadima@gmail.com>
  * @author Jason Grant <dadima@gmail.com>
- * 2/22/13
  *
  * imageSlim is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -60,11 +59,11 @@ switch($options[xPDOTransport::PACKAGE_ACTION]) {
 			$modx->log(xPDO::LOG_LEVEL_ERROR,'imageSlim requires the PHP DOM extension [ http://www.php.net/manual/en/book.dom.php ]');
 			$success = false;
 		}
-		if (ini_get('allow_url_fopen')) {
-			$modx->log(xPDO::LOG_LEVEL_INFO,'PHP: allow_url_fopen: yes  |  imageSlim can work with remote images');
+		if (function_exists('curl_init')) {
+			$modx->log(xPDO::LOG_LEVEL_INFO,'cURL - OK');
 		}
 		else {
-			$modx->log(xPDO::LOG_LEVEL_INFO,'PHP: allow_url_fopen: NO  |  Change this setting for imageSlim to work with remote images');
+			$modx->log(xPDO::LOG_LEVEL_INFO,'cURL - NOT FOUND  |  imageSlim will skip any remote images');
 		}
 
 		break;
