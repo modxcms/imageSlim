@@ -29,7 +29,7 @@ Requirements
 * [MODX Revolution](http://modx.com/download/)
 * The [phpThumbOf](http://modx.com/extras/package/phpthumbof) extra
 * PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim's installer will tell you whether your server has it. Most do.
-* PHP: [allow\_url\_fopen](http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen) set to On, for imageSlim to be able to process remote images (local images work regardless). The installer will let you know about this one too.
+* cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
 Examples
 --------
