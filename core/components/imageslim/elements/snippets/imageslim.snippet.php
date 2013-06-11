@@ -19,7 +19,7 @@
  *
  * @package imageslim
  * @author Jason Grant
- * @version 1.0.0-pl
+ * @version 1.0.1-pl
  */
 
 /**
@@ -71,12 +71,19 @@ $remoteTimeout = isset($remoteTimeout) ? (int) $remoteTimeout : 5;
 $q = empty($q) ? '' : (int) $q;
 $debug = isset($debug) ? (bool) $debug : FALSE;
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.0.0-pl]\nscale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.0.1pl]\nscale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
 $remoteDomains = FALSE;
 $dom = new DOMDocument;
 @$dom->loadHTML('<?xml encoding="UTF-8">' . $input);  // load this mother up
+
+$emptynode = $dom->createTextNode('');
+foreach (array('iframe', 'video', 'audio') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
+	foreach ($dom->getElementsByTagName($tag) as $node) {
+		$node->appendChild($emptynode);
+	}
+}
 
 foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	$src = $node->getAttribute('src');
@@ -127,7 +134,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 				continue;
 			}
 		}
-		elseif ($debug) { $debugstr .= "Retrieved from cache:$file\n";}
+		elseif ($debug) { $debugstr .= "Retrieved from cache: $file\n";}
 	}
 	else {
 		$file = MODX_BASE_PATH . rawurldecode(ltrim($src, '/'));  // Fix spaces and other encoded characters in the URL
@@ -271,6 +278,6 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 }
 
-$output = str_replace('&#13;', '', substr($dom->saveXML($dom->getElementsByTagName('body')->item(0)), 6, -7) );  // strip off the <body> tags and CR characters that DOM adds (?)
+$output = str_replace('&#13;', '', substr($dom->saveXML($dom->documentElement), 12, -14) );  // strip off the <body> tags and CR characters that DOM adds (?)
 $debug &&   $output = "<!--\n$debugstr-->\n$output";
 return $output;

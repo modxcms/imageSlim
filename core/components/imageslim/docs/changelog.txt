@@ -1,5 +1,11 @@
 Changelog for imageSlim
 
+imageSlim 1.0.1-pl
+---------------------
+* Fix domDocument handling of iframe, video and audio tags so they
+  don't become self closing.
+
+
 imageSlim 1.0.0-pl
 ---------------------
 * uses cURL for remote images
