@@ -26,8 +26,7 @@ Features
 Requirements
 ------------
 
-* [MODX Revolution](http://modx.com/download/)
-* The [phpThumbOf](http://modx.com/extras/package/phpthumbof) extra
+* Either [pThumb](https://github.com/oo12/phpThumbOf) or [phpThumbOf](http://modx.com/extras/package/phpthumbof).
 * PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim's installer will tell you whether your server has it. Most do.
 * cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
