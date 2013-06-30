@@ -19,7 +19,7 @@
  *
  * @package imageslim
  * @author Jason Grant
- * @version 1.0.1-pl
+ * @version 1.0.2-pl
  */
 
 /**
@@ -258,6 +258,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$opts['f'] = ($type === 'jpeg' ? 'jpeg' : 'png');  // if it's a gif or bmp let's just make it a png, shall we?
 		}
 		if ($q && $opts['f'] === 'jpeg')  { $opts['q'] = $q; }  // add user-specified jpeg quality if it's relevant
+		if ($opts['f'] === 'jpeg') { $opts['f'] = 'jpg'; }  // workaround for phpThumbOf issue #53
 		$image = array();
 		$image['input'] = $file;
 		$option_str = '';

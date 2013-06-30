@@ -1,15 +1,20 @@
 Changelog for imageSlim
 
+imageSlim 1.0.2-pl
+---------------------
+- [#2] Add a workaround for phpThumbOf issue #53
+
+
 imageSlim 1.0.1-pl
 ---------------------
-* Fix domDocument handling of iframe, video and audio tags so they
-  don't become self closing.
+- Fix domDocument handling of iframe, video and audio tags so they
+  don't become self closing
 
 
 imageSlim 1.0.0-pl
 ---------------------
-* uses cURL for remote images
-* adds caching of remote images and a max download time threshold
+- uses cURL for remote images
+- adds caching of remote images and a max download time threshold
 
 
 imageSlim 1.0.0-beta1

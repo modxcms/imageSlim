@@ -49,7 +49,7 @@ switch($options[xPDOTransport::PACKAGE_ACTION]) {
 			$modx->log(xPDO::LOG_LEVEL_INFO,'MODX: phpthumbof - OK');
 		}
 		else {
-			$modx->log(xPDO::LOG_LEVEL_ERROR,'imageSlim requires the phpthumbof package [ http://modx.com/extras/package/phpthumbof ]. Please install it, then try again.');
+			$modx->log(xPDO::LOG_LEVEL_ERROR,'imageSlim requires pThumb or phpThumbOf. Please install it, then try again.');
 			$success = false;
 		}
 		if (class_exists('DOMDocument')) {
