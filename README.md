@@ -1,4 +1,4 @@
-imageSlim 1.0
+imageSlim 1.1
 ===============
 
 The Image Slenderizer, for MODX.
@@ -26,7 +26,7 @@ Features
 Requirements
 ------------
 
-* Either [pThumb](https://github.com/oo12/phpThumbOf) or [phpThumbOf](http://modx.com/extras/package/phpthumbof).
+* Either [pThumb](https://github.com/oo12/phpThumbOf) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). pThumb (a fork of phpThumbOf) is significantly faster and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
 * PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim's installer will tell you whether your server has it. Most do.
 * cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
@@ -35,6 +35,8 @@ Examples
 
 * As an output filter:<br>```[[*content:imageSlim]]``` or<br>```[[*someRichTextTV:imageSlim=`scale=1.5&maxWidth=800&fixAspect=1`]]```
 * As a snippet:<br>```[[imageSlim? &input=`[[*content]]` &remoteImages=`1` &phpthumbof=`fltr[]=gray`]]```
+
+(Note that imageSlim expects some chunk of HTML as its input, like content created with TinyMCE or CKEditor; you shouldn't give it simply a path to an image. So as a very terse example, ```[[imageSlim? &input=`<img src="http://example.com/foo.jpg" />` &remoteImages=`1` &phpthumbof=`w=400`]]``` would work but ```<img src="[[imageSlim? &input=`http://example.com/foo.jpg` &remoteImages=`1` &phpthumbof=`w=400`]]" />``` wouldn't do what you want.)
 
 Terminology
 --------
@@ -86,6 +88,9 @@ Properties
   <td>&amp;q</td>
   <td>JPEG quality: 1 (worst) &ndash; 95 (best)</td>
   <td>75</td>
+</tr><tr><td>&amp;imgSrc</td>
+  <td>Attribute containing the image URL.<br>Normally this is src, but it could be a data attribute instead.</td>
+  <td>src</td>
 </tr><tr><td>&amp;phpthumbof</td>
   <td>An optional string of parameters to pass to phpThumbOf.<br>Be careful with this one though, since phpThumbOf will be run on <i>every</i> image in the input, not just the oversized ones.<br>Certain parameters–w, h, f, q, zc–may be overridden by imageSlim depending on the image and other settings.</td>
   <td></td>

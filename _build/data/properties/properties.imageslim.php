@@ -94,6 +94,14 @@ $properties = array(
 		'options' => '',
 		'value' => '0',
 		'lexicon' => 'imageslim:default'
+		),
+	array(
+		'name' => 'imgSrc',
+		'desc' => 'prop_is.imgSrc_desc',
+		'type' => 'textfield',
+		'options' => '',
+		'value' => 'src',
+		'lexicon' => 'imageslim:default'
 		)
 );
 

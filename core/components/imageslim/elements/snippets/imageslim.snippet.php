@@ -19,7 +19,7 @@
  *
  * @package imageslim
  * @author Jason Grant
- * @version 1.0.2-pl
+ * @version 1.1.0-pl
  */
 
 /**
@@ -46,6 +46,7 @@
  * @property boolean remoteImages
  * @property integer remoteTimeout
  * @property integer q
+ * @property string imgSrc
  * @property boolean debug
  *
  * See the default properties for a description of each.
@@ -60,7 +61,7 @@ if (isset($options)) {  // if we're being called as an output filter, set variab
 }
 
 // process our properties
-$scale = !empty($scale) ? (float) $scale : 1;
+$scale = empty($scale) ? 1 : (float) $scale;
 $convertThreshold = isset($convertThreshold) && $convertThreshold !== '' ? (float) $convertThreshold * 1024 : FALSE;
 $maxWidth = isset($maxWidth) && $maxWidth !== '' ? (int) $maxWidth: 999999;
 $maxHeight = isset($maxHeight) && $maxHeight !== '' ? (int) $maxHeight: 999999;
@@ -69,9 +70,10 @@ $fixAspect = isset($fixAspect) ? (bool) $fixAspect : TRUE;
 $remoteImages = isset($remoteImages) ? (bool) $remoteImages && function_exists('curl_init') : FALSE;
 $remoteTimeout = isset($remoteTimeout) ? (int) $remoteTimeout : 5;
 $q = empty($q) ? '' : (int) $q;
+$imgSrc = empty($imgSrc) ? 'src' : $imgSrc;
 $debug = isset($debug) ? (bool) $debug : FALSE;
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.0.1pl]\nscale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.1.0-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
 $remoteDomains = FALSE;
@@ -86,27 +88,13 @@ foreach (array('iframe', 'video', 'audio') as $tag) {  // prevent certain tags f
 }
 
 foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
-	$src = $node->getAttribute('src');
+	$src = $node->getAttribute($imgSrc);
 	$file = $size = FALSE;
 	if ( preg_match('/^(?:https?:)?\/\/(.+?)\/(.+)/i', $src, $matches) ) {  // if we've got a remote image to work with
-		$allowedDomain = TRUE;
-		$file = $src;
-		if ( $remoteImages && $modx->config['phpthumb_nohotlink_enabled'] ) {  // if nohotlink is enabled, make sure it's an allowed domain
-			$allowedDomain = FALSE;  // domains will only be allowed if they match one in phpthumb_nohotlink_valid_domains
-			if ($remoteDomains === FALSE) {  // first time through get a list of allowed domains
-				$remoteDomains = explode(',', $modx->config['phpthumb_nohotlink_valid_domains']);
-				$remoteDomainsCount = count($remoteDomains);
-				$debug &&   $debugstr .= "\nphpthumb_nohotlink: Enabled  valid_domains:{$modx->config['phpthumb_nohotlink_valid_domains']}\n";
-			}
-			for ($i=0; $i < $remoteDomainsCount && !$allowedDomain; ++$i) {
-				$allowedDomain = preg_match("/{$remoteDomains[$i]}$/i", $matches[1]);
-			}
-		}
-		if (!$allowedDomain) {
-			$debug &&   $debugstr .= "\nsrc:$src\nDomain:{$matches[1]}\n*** Remote image not allowed. Skipping ***\n";
+		if (!$remoteImages) {
+			$debug &&   $debugstr .= "\nsrc:$src\n*** Remote image not allowed. Skipping ***\n";
 			continue;
 		}
-		$debug &&   $debugstr .= "\nsrc:$src\nDomain:{$matches[1]}  Allowed:$allowedDomain\n";
 		$file = $cachePath . preg_replace("/[^\w\d\-_\.]/", '-', "{$matches[1]}-{$matches[2]}");
 		if (!file_exists($file)) {  // if it's not in our cache, go get it
 			$debug &&   $debugstr .= "Retrieving $src\nTarget filename: $file\n";
@@ -270,7 +258,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 		$image['options'] = rtrim($option_str, '&');
 		$debug &&   $debugstr .= "phpthumbof options: {$image['options']}\n";
-		$node->setAttribute( 'src', $modx->runSnippet('phpthumbof', $image) );  // do the business and set the src
+		$node->setAttribute( $imgSrc, $modx->runSnippet('phpthumbof', $image) );  // do the business and set the src
 		if ($updateStyles) {
 			$style = '';
 			foreach($styles as $k => $v) { $style .= "$k:$v;"; }  // turn $styles array into an inline style string

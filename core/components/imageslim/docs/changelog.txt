@@ -1,22 +1,32 @@
 Changelog for imageSlim
 
-imageSlim 1.0.2-pl
----------------------
+1.1.0-pl
+--------
+- [#4] Add imgSrc property to specify a different source attribute
+  for img tags. Data attributes for example.
+- Remove hotlinking checks for remote images.  I can't think of when
+  these would actually be useful.
+- Add imageSlimCacheManager plugin to clean up the remote images
+  cache on OnSiteRefresh events.
+
+
+1.0.2-pl
+--------
 - [#2] Add a workaround for phpThumbOf issue #53
 
 
-imageSlim 1.0.1-pl
----------------------
+1.0.1-pl
+--------
 - Fix domDocument handling of iframe, video and audio tags so they
   don't become self closing
 
 
-imageSlim 1.0.0-pl
----------------------
+1.0.0-pl
+--------
 - uses cURL for remote images
 - adds caching of remote images and a max download time threshold
 
 
-imageSlim 1.0.0-beta1
----------------------
+1.0.0-beta1
+-----------
 Initial Version

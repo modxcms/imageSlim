@@ -37,3 +37,4 @@ $_lang['prop_is.remoteImages_desc'] = 'Allow imageSlim to work with images from 
 $_lang['prop_is.remoteTimeout_desc'] = 'Maximum amount of time to allow for a remote image download.<br>Units: seconds<br>Default: 5';
 $_lang['prop_is.scale_desc'] = 'Allow the natural size of the image to exceed its display size by this factor.<br>Use a value between 1.5 and 2 for retina displays. A scale of 1 will keep the image&rsquo;s natural size the same as its display size.';
 $_lang['prop_is.debug_desc'] = 'Output debug info in an HTML comment';
+$_lang['prop_is.imgSrc_desc'] = 'Attribute containing the image URL.<br>Normally this is src, but it could be a data attribute instead.<br>Default: src';
