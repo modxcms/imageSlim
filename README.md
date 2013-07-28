@@ -1,4 +1,4 @@
-imageSlim 1.0 (beta)
+imageSlim 1.1
 ===============
 
 The Image Slenderizer, for MODX.
@@ -26,16 +26,17 @@ Features
 Requirements
 ------------
 
-* [MODX Revolution](http://modx.com/download/)
-* The [phpThumbOf](http://modx.com/extras/package/phpthumbof) extra
+* Either [pThumb](https://github.com/oo12/phpThumbOf) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). pThumb (a fork of phpThumbOf) is significantly faster and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
 * PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim's installer will tell you whether your server has it. Most do.
-* PHP: [allow\_url\_fopen](http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen) set to On, for imageSlim to be able to process remote images (local images work regardless). The installer will let you know about this one too.
+* cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
 Examples
 --------
 
 * As an output filter:<br>```[[*content:imageSlim]]``` or<br>```[[*someRichTextTV:imageSlim=`scale=1.5&maxWidth=800&fixAspect=1`]]```
 * As a snippet:<br>```[[imageSlim? &input=`[[*content]]` &remoteImages=`1` &phpthumbof=`fltr[]=gray`]]```
+
+(Note that imageSlim expects some chunk of HTML as its input, like content created with TinyMCE or CKEditor; you shouldn't give it simply a path to an image. So as a very terse example, ```[[imageSlim? &input=`<img src="http://example.com/foo.jpg" />` &remoteImages=`1` &phpthumbof=`w=400`]]``` would work but ```<img src="[[imageSlim? &input=`http://example.com/foo.jpg` &remoteImages=`1` &phpthumbof=`w=400`]]" />``` wouldn't do what you want.)
 
 Terminology
 --------
@@ -77,12 +78,19 @@ Properties
   <td>Yes</td>
 </tr><tr>
   <td>&amp;remoteImages</td>
-  <td>Allow imageSlim to work with images from other servers.<br>Requires proper settings for allow_url_fopen in PHP and phpthumb_nohotlink_enabled and phpthumb_nohotlink_valid_domains in the MODX system settings (core > phpthumb)<br>Remote images take longer to process than local ones, obviously.</td>
+  <td>Allow imageSlim to work with images from other servers.<br>Requires cURL and proper settings for phpthumb_nohotlink_enabled and phpthumb_nohotlink_valid_domains in the MODX system settings (core > phpthumb)<br>Remote images take longer to process than local ones obviously, but imageSlim does cache them locally in assets/components/imageslim/cache/, so it's only a one-time performance hit.</td>
   <td>No</td>
+ </tr><tr>
+  <td>&amp;remoteTimeout</td>
+  <td>Maximum amount of time to allow for a remote image download.<br>Units: seconds</td>
+  <td>5</td>
 </tr><tr>
   <td>&amp;q</td>
   <td>JPEG quality: 1 (worst) &ndash; 95 (best)</td>
   <td>75</td>
+</tr><tr><td>&amp;imgSrc</td>
+  <td>Attribute containing the image URL.<br>Normally this is src, but it could be a data attribute instead.</td>
+  <td>src</td>
 </tr><tr><td>&amp;phpthumbof</td>
   <td>An optional string of parameters to pass to phpThumbOf.<br>Be careful with this one though, since phpThumbOf will be run on <i>every</i> image in the input, not just the oversized ones.<br>Certain parameters–w, h, f, q, zc–may be overridden by imageSlim depending on the image and other settings.</td>
   <td></td>
@@ -110,5 +118,14 @@ Notes
 * _Caching_ - Please don't do this: ```[[!imageSlim? &input=`...`]]``` (that is, call it uncached), especially on an area which might have more than a few images.  I spent a bunch of time making imageSlim as light and efficient as possible, but phpthumb is a lumbering beast. Though phpthumb does cache its output, so after the first run it only has to regenerate images when the filename, or parameters (or resource) changes, or you go to Site > Clear Cache in the Manager.
 * _Image formats_ – imageSlim will convert any non-jpegs (gifs, bmps, tiffs, etc) it has to resize into pngs by default.
 * _Stretched images_ – if you have &amp;fixAspect on, imageSlim will fix them _if_ it has enough resolution to work with. If the display size exceeds the natural size, it's not going to interpolate images up to fix the aspect ratio.  However if the image is being sized down because of &amp;maxWidth or &amp;maxHeight, imageSlim will still try to fix it, even lowering the scale some if it needs to (just not lower than 1).
+
+phpThumbOf Notes
+-----------------
+
+phpThumbOf has several bugs and performance issues, and doesn't appear to be actively maintained.  I've created a fork of it, a drop-in replacement called [pThumb](https://github.com/oo12/phpThumbOf).  Among other things, it addresses the following phpThumbOf issues which can affect imageSlim:
+
+* _Image filenames_ – phpThumbOf 1.4.0 has some problems with image names, in particular when Hash Thumbnail Names in System Settings is set to Off, the default.  Images ending in .jpg lose the last character of their name when the ```f=jpeg``` option is used (Issue [#53](https://github.com/splittingred/phpThumbOf/issues/53)).  imageSlim frequently uses this option and if you have an an image with a 1-charater file name (ex. 1.jpg) the image won't display because it's become ```.[hash].jpeg```. Also if multiple images with the same name (in different directories) on the same page are called with the same phpThumbOf options, phpThumbOf will mistakenly use the first image for all the rest (Issue [#48](https://github.com/splittingred/phpThumbOf/issues/48)).  And if you have the exact same image used on different pages with the same phpThumbOf options it'll create separate files for each one, which means more work for the server and interferes with caching in visitors' browsers (Issue [#44](https://github.com/splittingred/phpThumbOf/issues/44)).
+* _Cache_ – Clearing the site cache (via Site > Clear Cache in the Manager) will remove *all* the images in the phpThumbOf cache, meaning everything has to be rebuilt. If you don't want this to happen, disable the phpThumbOfCacheManager plugin. You can always clean out the cache manually.
+* _Cache cleanup_ - phpThumbOf attempts to clean up its cache directory every time it's called, so if you have a page with 30 images it'll run its cleanup method 30 times while the page is being built, and that can start to affect performance, especially when the cache has a lot of files.  Furthermore because of a conflict with the core phpThumb class, phpThumbOf's cache cleanup never actually deletes any files, only wastes time (Issue [#54](https://github.com/splittingred/phpThumbOf/issues/54)). Besides switching to pThumb, another way to disable this is to go to System Settings and under core > phpThumb set Max Cache Age, Max Cache Files, and Max Cache Size (three settings) all to 0.
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/62b82f55f4fa8e341951547aad88c15d "githalytics.com")](http://githalytics.com/oo12/imageSlim)

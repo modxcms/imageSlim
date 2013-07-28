@@ -19,7 +19,7 @@
  *
  * @package imageslim
  * @author Jason Grant
- * @version 1.0.0-beta1
+ * @version 1.1.0-pl
  */
 
 /**
@@ -37,15 +37,17 @@
  * Properties
  * ----------
  *
- * @property scale - (float)
- * @property conventThreshold - (float)
- * @property maxWidth - (int)
- * @property maxHeight - (int)
- * @property phpthumbof - (string)
- * @property fixAspect - (boolean)
- * @property remoteImages - (boolean)
- * @property q - (int)
- * @property debug - (boolean)
+ * @property float scale
+ * @property float conventThreshold
+ * @property integer maxWidth
+ * @property integer maxHeight
+ * @property string phpthumbof
+ * @property boolean fixAspect
+ * @property boolean remoteImages
+ * @property integer remoteTimeout
+ * @property integer q
+ * @property string imgSrc
+ * @property boolean debug
  *
  * See the default properties for a description of each.
  *
@@ -59,46 +61,68 @@ if (isset($options)) {  // if we're being called as an output filter, set variab
 }
 
 // process our properties
-$scale = !empty($scale) ? (float) $scale : 1;
+$scale = empty($scale) ? 1 : (float) $scale;
 $convertThreshold = isset($convertThreshold) && $convertThreshold !== '' ? (float) $convertThreshold * 1024 : FALSE;
 $maxWidth = isset($maxWidth) && $maxWidth !== '' ? (int) $maxWidth: 999999;
 $maxHeight = isset($maxHeight) && $maxHeight !== '' ? (int) $maxHeight: 999999;
 $phpthumbof = isset($phpthumbof) ? $phpthumbof : '';
-$fixAspect = isset($fixAspect) ? (boolean) $fixAspect : TRUE;
-$remoteImages = isset($remoteImages) ? (boolean) $remoteImages : FALSE;
-!empty($q) &&   $q = (int) $q;
-$debug = isset($debug) ? (boolean) $debug : FALSE;
+$fixAspect = isset($fixAspect) ? (bool) $fixAspect : TRUE;
+$remoteImages = isset($remoteImages) ? (bool) $remoteImages && function_exists('curl_init') : FALSE;
+$remoteTimeout = isset($remoteTimeout) ? (int) $remoteTimeout : 5;
+$q = empty($q) ? '' : (int) $q;
+$imgSrc = empty($imgSrc) ? 'src' : $imgSrc;
+$debug = isset($debug) ? (bool) $debug : FALSE;
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.0.0-beta1]\nscale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\n";
-$debug &&   $debugstr .= "Remote images:$remoteImages  allow_url_fopen:" . ini_get('allow_url_fopen') . "\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.1.0-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
-$remoteImages = $remoteImages && ini_get('allow_url_fopen');  // remote images won't work without this setting on
-if ( $remoteImages && $modx->config['phpthumb_nohotlink_enabled'] ) {  // if it's enabled, get a list of allowed domains
-	$remoteDomains = explode(',', $modx->config['phpthumb_nohotlink_valid_domains']);
-	$remoteDomainsCount = count($remoteDomains);
-	$debug &&   $debugstr .= "phpthumb_nohotlink: Enabled  valid_domains:{$modx->config['phpthumb_nohotlink_valid_domains']}\n";
-}
-
+$cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
+$remoteDomains = FALSE;
 $dom = new DOMDocument;
 @$dom->loadHTML('<?xml encoding="UTF-8">' . $input);  // load this mother up
 
+$emptynode = $dom->createTextNode('');
+foreach (array('iframe', 'video', 'audio') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
+	foreach ($dom->getElementsByTagName($tag) as $node) {
+		$node->appendChild($emptynode);
+	}
+}
+
 foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
-	$src = $node->getAttribute('src');
-	$file = $size = $isRemote = FALSE;
-	if ( preg_match('/^(?:https?:)?\/\/(.+?)\//i', $src, $matches) ) {  // if we've got a remote image to work with
-		$isRemote = $allowedDomain = TRUE;
-		$file = $src;
-		if ( $remoteImages && $modx->config['phpthumb_nohotlink_enabled'] ) {  // if nohotlink is enabled, make sure it's an allowed domain
-			$allowedDomain = FALSE;  // domains will only be allowed if they match one in phpthumb_nohotlink_valid_domains
-			for ($i=0; $i < $remoteDomainsCount && !$allowedDomain; ++$i) {
-				$allowedDomain = preg_match("/{$remoteDomains[$i]}$/i", $matches[1]);
-			}
-		}
-		if (!$allowedDomain) {
-			$debug &&   $debugstr .= "\nsrc:$src\nDomain:{$matches[1]}\n*** Remote image not allowed. Skipping ***\n";
+	$src = $node->getAttribute($imgSrc);
+	$file = $size = FALSE;
+	if ( preg_match('/^(?:https?:)?\/\/(.+?)\/(.+)/i', $src, $matches) ) {  // if we've got a remote image to work with
+		if (!$remoteImages) {
+			$debug &&   $debugstr .= "\nsrc:$src\n*** Remote image not allowed. Skipping ***\n";
 			continue;
 		}
-		$debug &&   $debugstr .= "\nsrc:$src\nDomain:{$matches[1]}  Allowed:$allowedDomain\n";
+		$file = $cachePath . preg_replace("/[^\w\d\-_\.]/", '-', "{$matches[1]}-{$matches[2]}");
+		if (!file_exists($file)) {  // if it's not in our cache, go get it
+			$debug &&   $debugstr .= "Retrieving $src\nTarget filename: $file\n";
+			$fh = fopen($file, 'wb');
+			if (!$fh) {
+				$debug &&   $debugstr .= "*** Error ***  Can't write to cache directory $cachePath\n";
+				continue;
+			}
+			$curlFail = FALSE;
+			$ch = curl_init($src);
+			curl_setopt_array($ch, array(
+				CURLOPT_TIMEOUT	=> $remoteTimeout,
+				CURLOPT_FILE => $fh,
+				CURLOPT_FAILONERROR => TRUE
+			));
+			curl_exec($ch);
+			if (curl_errno($ch)) {
+				$debug &&   $debugstr .= 'cURL error: ' . curl_error($ch) . " *** Skipping ***\n";
+				$curlFail = TRUE;
+			}
+			curl_close($ch);
+			fclose($fh);
+			if ($curlFail) {  // if we didn't get it, skip and don't cache
+				unlink($file);
+				continue;
+			}
+		}
+		elseif ($debug) { $debugstr .= "Retrieved from cache: $file\n";}
 	}
 	else {
 		$file = MODX_BASE_PATH . rawurldecode(ltrim($src, '/'));  // Fix spaces and other encoded characters in the URL
@@ -124,11 +148,11 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		$styles = array();
 		preg_match_all('/([\w-]+)\s*:\s*([^;]+)\s*;?/', $styleAttr, $matches, PREG_SET_ORDER);
 		foreach ($matches as $match) { $styles[$match[1]] = $match[2]; }  // bust everything out into an array
-		if ( @$styles['width'] && stripos($styles['width'], 'px') ) {  // if we have a width in pixels
+		if ( isset($styles['width']) && stripos($styles['width'], 'px') ) {  // if we have a width in pixels
 			preg_match('/\d+/', $styles['width'], $matches);
 			$wCss = $matches[0];  // get just the value
 		}
-		if ( @$styles['height'] && stripos($styles['height'], 'px') ) {  // same deal for height
+		if ( isset($styles['height']) && stripos($styles['height'], 'px') ) {  // same deal for height
 			preg_match('/\d+/', $styles['height'], $matches);
 			$hCss = $matches[0];
 		}
@@ -183,7 +207,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$opts['w'] = $opts['h'] * $ar;
 		}
 		else  { unset($opts['w']); }  // forget about width, since height is our limiting dimension
-		$debug &&   $debugstr .= '++(H) ' . (@$opts['w'] ? $opts['w'] : '') . " realh:{$opts['h']}\n";
+		$debug &&   $debugstr .= '++(H) ' . (isset($opts['w']) ? $opts['w'] : '') . " realh:{$opts['h']}\n";
 		if ($maxHeight && $h > $maxHeight) {
 			$h = $maxHeight;
 			$w = round($maxHeight * $ar);
@@ -191,8 +215,8 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$debug &&   $debugstr .= "++   w:$w  h:$h\n";
 		}
 	}
-	@$opts['w'] &&   $opts['w'] = round($opts['w']);  // round these to integers
-	@$opts['h'] &&   $opts['h'] = round($opts['h']);
+	if (isset($opts['w']))  { $opts['w'] = round($opts['w']); }  // round these to integers
+	if (isset($opts['h']))  { $opts['h'] = round($opts['h']); }
 
 	if ($adjustDisplaySize) {  // ok, update our display size if we need do
 		if ($wCss) {  // if the width was in an inline style (and in px), use that
@@ -209,13 +233,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 
 	if ($convertThreshold !== FALSE && $type !== 'jpeg') {
-		if ($isRemote) {
-			$fsize = @array_change_key_case(@get_headers($file, 1), CASE_LOWER);
-			if ( strcasecmp($fsize[0], 'HTTP/1.1 200 OK') !== 0 ) { $fsize = $fsize['content-length'][1]; }
-			else { $fsize = $fsize['content-length']; }  // the file size is in a different place if it's a redirect
-		}
-		else { $fsize = @filesize($file); }
-
+		$fsize = filesize($file);
 		if ($fsize > $convertThreshold) {  // if we've got a non-jpeg that's too big, convert it to jpeg
 			$opts['f'] = 'jpeg';
 			$debug &&   $debugstr .= "File size:$fsize  Threshold exceeded; converting to jpeg.\n";
@@ -223,11 +241,12 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 
 	if (!empty($opts)) {  // have we anything to do for this lovely image?
-		$aspectNeedsFix &&  $opts['zc'] = 1;
+		if ($aspectNeedsFix)  { $opts['zc'] = 1; }
 		if ( !isset($opts['f']) ) {  // if output file type isn't user specified...
 			$opts['f'] = ($type === 'jpeg' ? 'jpeg' : 'png');  // if it's a gif or bmp let's just make it a png, shall we?
 		}
-		$q && $opts['f'] === 'jpeg' &&   $opts['q'] = $q;  // add user-specified jpeg quality if it's relevant
+		if ($q && $opts['f'] === 'jpeg')  { $opts['q'] = $q; }  // add user-specified jpeg quality if it's relevant
+		if ($opts['f'] === 'jpeg') { $opts['f'] = 'jpg'; }  // workaround for phpThumbOf issue #53
 		$image = array();
 		$image['input'] = $file;
 		$option_str = '';
@@ -235,11 +254,11 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			if (is_array($v)) {  // handle any array options like fltr[]
 				foreach($v as $param) { $option_str .= $k . "[]=$param&"; }
 			}
-			else { $option_str .= "$k=$v&";}
+			else { $option_str .= "$k=$v&"; }
 		}
 		$image['options'] = rtrim($option_str, '&');
 		$debug &&   $debugstr .= "phpthumbof options: {$image['options']}\n";
-		$node->setAttribute( 'src', $modx->runSnippet('phpthumbof', $image) );  // do the business and set the src
+		$node->setAttribute( $imgSrc, $modx->runSnippet('phpthumbof', $image) );  // do the business and set the src
 		if ($updateStyles) {
 			$style = '';
 			foreach($styles as $k => $v) { $style .= "$k:$v;"; }  // turn $styles array into an inline style string
@@ -248,7 +267,6 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 }
 
-$output = str_replace('&#13;', '', substr($dom->saveXML($dom->getElementsByTagName('body')->item(0)), 6, -7) );  // strip off the <body> tags and CR characters that DOM adds (?)
+$output = str_replace('&#13;', '', substr($dom->saveXML($dom->documentElement), 12, -14) );  // strip off the <body> tags and CR characters that DOM adds (?)
 $debug &&   $output = "<!--\n$debugstr-->\n$output";
-
 return $output;
