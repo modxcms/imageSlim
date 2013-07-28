@@ -65,7 +65,7 @@ if ($dirhandle = @opendir($dirname)) {
 	closedir($dirhandle);
 }
 $totalimages = count($AllFilesInCacheDirectory);
-$modx->log(modX::LOG_LEVEL_INFO, ":: $totalimages image" . ($totalimages != 1 ? 's':'') . ' in the cache');
+$modx->log(modX::LOG_LEVEL_INFO, ":: $totalimages image" . ($totalimages !== 1 ? 's':'') . ' in the cache');
 
 if (empty($AllFilesInCacheDirectory)) {
 	return;
