@@ -4,7 +4,7 @@ Changelog for imageSlim
 ---------------------
 
 - [#5] If MODX is installed in a subdirectory, keep the subdirectory
-  name from incorrectly occuring twice in the path.
+  name from incorrectly occurring twice in the path.
 
 
 1.1.0-pl
