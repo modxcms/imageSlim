@@ -73,9 +73,10 @@ $q = empty($q) ? '' : (int) $q;
 $imgSrc = empty($imgSrc) ? 'src' : $imgSrc;
 $debug = isset($debug) ? (bool) $debug : FALSE;
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.1.0-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.1.1-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
+$badPath = MODX_BASE_PATH . ltrim(MODX_BASE_URL, '/');  // we'll use this later to weed out duplicate subdirs
 $remoteDomains = FALSE;
 $dom = new DOMDocument;
 @$dom->loadHTML('<?xml encoding="UTF-8">' . $input);  // load this mother up
@@ -126,6 +127,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 	else {
 		$file = MODX_BASE_PATH . rawurldecode(ltrim($src, '/'));  // Fix spaces and other encoded characters in the URL
+		$file = str_replace($badPath, MODX_BASE_PATH, $file);  // if MODX is in a subdir, keep this subdir name from occuring twice
 		$debug &&   $debugstr .= "\nsrc:$file\n";
 	}
 

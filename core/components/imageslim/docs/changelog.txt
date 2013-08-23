@@ -1,5 +1,12 @@
 Changelog for imageSlim
 
+1.1.1-pl [22.08.2013]
+---------------------
+
+- [#5] If MODX is installed in a subdirectory, keep the subdirectory
+  name from incorrectly occuring twice in the path.
+
+
 1.1.0-pl
 --------
 - [#4] Add imgSrc property to specify a different source attribute
