@@ -5,6 +5,8 @@ Changelog for imageSlim
 
 - [#5] If MODX is installed in a subdirectory, keep the subdirectory
   name from incorrectly occurring twice in the path.
+- On remote images, add a protocol to any protocol-relative URLs to
+  prevent cURL from failing.
 
 
 1.1.0-pl

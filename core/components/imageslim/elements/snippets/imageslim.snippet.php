@@ -105,6 +105,9 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 				continue;
 			}
 			$curlFail = FALSE;
+			if ($src[0] === '/') {  //cURL doesn't like protocol-relative URLs, so add http or https
+    			$src = (empty($_SERVER['HTTPS']) ? 'http:' : 'https:') . $src;
+			}
 			$ch = curl_init($src);
 			curl_setopt_array($ch, array(
 				CURLOPT_TIMEOUT	=> $remoteTimeout,
