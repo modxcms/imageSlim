@@ -81,7 +81,7 @@ $dom = new DOMDocument;
 @$dom->loadHTML('<?xml encoding="UTF-8">' . $input);  // load this mother up
 
 $emptynode = $dom->createTextNode('');
-foreach (array('iframe', 'video', 'audio') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
+foreach (array('iframe', 'video', 'audio', 'textarea') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
 	foreach ($dom->getElementsByTagName($tag) as $node) {
 		$node->appendChild($emptynode);
 	}
