@@ -19,19 +19,6 @@
  * imageSlim; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
-<<<<<<< HEAD
- *
- * @package imageslim
- * @author Jason Grant
- * @version 1.1.0-pl
- */
-
-/**
- * Documentation, bug reports, etc.
- * https://github.com/oo12/imageSlim
- *
-=======
->>>>>>> dev
  * Variables
  * ---------
  *
@@ -52,10 +39,7 @@
  * @property boolean remoteImages
  * @property integer remoteTimeout
  * @property integer q
-<<<<<<< HEAD
-=======
  * @property boolean useResizer
->>>>>>> dev
  * @property string imgSrc
  * @property boolean debug
  *
@@ -80,17 +64,11 @@ $remoteTimeout = isset($remoteTimeout) ? (int) $remoteTimeout : 5;
 $q = empty($q) ? '' : (int) $q;
 $imgSrc = empty($imgSrc) ? 'src' : $imgSrc;
 $debug = isset($debug) ? (bool) $debug : FALSE;
-<<<<<<< HEAD
-
-$debug &&   $debugstr = "i m a g e S l i m  [1.1.1-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
-
-=======
 $useResizer = isset($useResizer) ? $useResizer : $modx->getOption('imageslim.use_resizer', NULL, TRUE);
 
 
 $debug &&   $debugstr = "i m a g e S l i m  [1.1.2-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL: " . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
->>>>>>> dev
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
 $badPath = MODX_BASE_PATH . ltrim(MODX_BASE_URL, '/');  // we'll use this later to weed out duplicate subdirs
 $remoteDomains = FALSE;
@@ -98,11 +76,7 @@ $dom = new DOMDocument;
 @$dom->loadHTML('<?xml encoding="UTF-8">' . $input);  // load this mother up
 
 $emptynode = $dom->createTextNode('');
-<<<<<<< HEAD
-foreach (array('iframe', 'video', 'audio') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
-=======
 foreach (array('iframe', 'video', 'audio', 'textarea') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
->>>>>>> dev
 	foreach ($dom->getElementsByTagName($tag) as $node) {
 		$node->appendChild($emptynode);
 	}
@@ -111,16 +85,12 @@ foreach (array('iframe', 'video', 'audio', 'textarea') as $tag) {  // prevent ce
 foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	$src = $node->getAttribute($imgSrc);
 	$file = $size = FALSE;
-<<<<<<< HEAD
-	if ( preg_match('/^(?:https?:)?\/\/(.+?)\/(.+)/i', $src, $matches) ) {  // if we've got a remote image to work with
-=======
 	$isRemote = preg_match('/^(?:https?:)?\/\/((?:.+?)\.(?:.+?))\/(.+)/i', $src, $matches);  // check for absolute URLs
 	if ($isRemote && MODX_HTTP_HOST === strtolower($matches[1])) {  // if it's the same server we're running on
 		$isRemote = FALSE;  // then it's not really remote
 		$src = $matches[2];  // we just need the path and filename
 	}
 	if ($isRemote) {  // if we've got a real remote image to work with
->>>>>>> dev
 		if (!$remoteImages) {
 			$debug &&   $debugstr .= "\nsrc:$src\n*** Remote image not allowed. Skipping ***\n";
 			continue;
@@ -182,19 +152,11 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		$styles = array();
 		preg_match_all('/([\w-]+)\s*:\s*([^;]+)\s*;?/', $styleAttr, $matches, PREG_SET_ORDER);
 		foreach ($matches as $match) { $styles[$match[1]] = $match[2]; }  // bust everything out into an array
-<<<<<<< HEAD
-		if ( isset($styles['width']) && stripos($styles['width'], 'px') ) {  // if we have a width in pixels
-			preg_match('/\d+/', $styles['width'], $matches);
-			$wCss = $matches[0];  // get just the value
-		}
-		if ( isset($styles['height']) && stripos($styles['height'], 'px') ) {  // same deal for height
-=======
 		if (isset($styles['width']) && stripos($styles['width'], 'px')) {  // if we have a width in pixels
 			preg_match('/\d+/', $styles['width'], $matches);
 			$wCss = $matches[0];  // get just the value
 		}
 		if (isset($styles['height']) && stripos($styles['height'], 'px')) {  // same deal for height
->>>>>>> dev
 			preg_match('/\d+/', $styles['height'], $matches);
 			$hCss = $matches[0];
 		}
@@ -284,24 +246,15 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 
 	if (!empty($opts)) {  // have we anything to do for this lovely image?
 		if ($aspectNeedsFix)  { $opts['zc'] = 1; }
-<<<<<<< HEAD
-		if ( !isset($opts['f']) ) {  // if output file type isn't user specified...
-=======
 		if (!isset($opts['f'])) {  // if output file type isn't user specified...
->>>>>>> dev
 			$opts['f'] = ($type === 'jpeg' ? 'jpeg' : 'png');  // if it's a gif or bmp let's just make it a png, shall we?
 		}
 		if ($q && $opts['f'] === 'jpeg')  { $opts['q'] = $q; }  // add user-specified jpeg quality if it's relevant
 		if ($opts['f'] === 'jpeg') { $opts['f'] = 'jpg'; }  // workaround for phpThumbOf issue #53
-<<<<<<< HEAD
-		$image = array();
-		$image['input'] = $file;
-=======
 		$image = array(
 			'input' => $file,
 			'useResizer' => $useResizer
 		);
->>>>>>> dev
 		$option_str = '';
 		foreach ($opts as $k => $v)  {  // turn our phpthumb options array back into a string
 			if (is_array($v)) {  // handle any array options like fltr[]
@@ -311,11 +264,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 		$image['options'] = rtrim($option_str, '&');
 		$debug &&   $debugstr .= "phpthumbof options: {$image['options']}\n";
-<<<<<<< HEAD
-		$node->setAttribute( $imgSrc, $modx->runSnippet('phpthumbof', $image) );  // do the business and set the src
-=======
 		$node->setAttribute($imgSrc, $modx->runSnippet('phpthumbof', $image));  // do the business and set the src
->>>>>>> dev
 		if ($updateStyles) {
 			$style = '';
 			foreach($styles as $k => $v) { $style .= "$k:$v;"; }  // turn $styles array into an inline style string

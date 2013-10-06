@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-imageSlim 1.1
-=======
 imageSlim 1.1.2-pl
->>>>>>> dev
 ===============
 
 The Image Slenderizer, for MODX.
@@ -30,13 +26,8 @@ Features
 Requirements
 ------------
 
-<<<<<<< HEAD
-* Either [pThumb](https://github.com/oo12/phpThumbOf) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). pThumb (a fork of phpThumbOf) is significantly faster and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
-* PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim's installer will tell you whether your server has it. Most do.
-=======
 * Either [pThumb](http://modx.com/extras/package/pthumb) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). I recommend pThumb since it’s fully compatible with phpThumbOf, _much_ faster, and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
 * PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim’s installer will tell you whether your server has it. Most do.
->>>>>>> dev
 * cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
 Examples
