@@ -1,4 +1,4 @@
-imageSlim 1.1
+imageSlim 1.1.2-pl
 ===============
 
 The Image Slenderizer, for MODX.
@@ -26,8 +26,8 @@ Features
 Requirements
 ------------
 
-* Either [pThumb](https://github.com/oo12/phpThumbOf) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). pThumb (a fork of phpThumbOf) is significantly faster and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
-* PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim's installer will tell you whether your server has it. Most do.
+* Either [pThumb](http://modx.com/extras/package/pthumb) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). I recommend pThumb since it’s fully compatible with phpThumbOf, _much_ faster, and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
+* PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim’s installer will tell you whether your server has it. Most do.
 * cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
 Examples
@@ -46,8 +46,10 @@ Terminology
 * _Aspect Ratio_ – The ratio of the image's width to its height (i.e. width / height).  For example, an image 400px wide and 200px tall has an aspect ratio of 2.
 
 
-Properties
+Options
 ----------
+
+### Properties
 
 <table>
 <tr><th>Property</th><th>Description</th><th>Default</th></tr>
@@ -97,8 +99,23 @@ Properties
 </tr><tr><td>&amp;debug</td>
   <td>Output debug info in an HTML comment.</td>
   <td>No</td>
+</tr><tr><td>&amp;useResizer</td>
+  <td>See the corresponding setting below.</td>
+  <td></td>
 </tr>
 </table>
+
+### Settings
+
+<table>
+<tr><th>Setting</th><th>Description</th><th>Default</th></tr>
+<tr>
+  <td>imageslim.use_resizer</td>
+  <td>If pThumb is installed, allow imageSlim to use Resizer even if it isn’t enabled sitewide. Resizer is faster than phpThumb for image sizing.</td>
+  <td>Yes</td>
+</tr>
+</table>
+
 
 An Example of Image Sizing
 ------------------------

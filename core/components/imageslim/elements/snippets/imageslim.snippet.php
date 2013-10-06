@@ -3,6 +3,9 @@
  * imageSlim
  * Copyright 2013 Jason Grant
  *
+ * Documentation, bug reports, etc.
+ * https://github.com/oo12/imageSlim
+ *
  * imageSlim is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
@@ -15,16 +18,6 @@
  * You should have received a copy of the GNU General Public License along with
  * imageSlim; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
- *
- *
- * @package imageslim
- * @author Jason Grant
- * @version 1.1.0-pl
- */
-
-/**
- * Documentation, bug reports, etc.
- * https://github.com/oo12/imageSlim
  *
  * Variables
  * ---------
@@ -46,12 +39,11 @@
  * @property boolean remoteImages
  * @property integer remoteTimeout
  * @property integer q
+ * @property boolean useResizer
  * @property string imgSrc
  * @property boolean debug
  *
  * See the default properties for a description of each.
- *
- * @package imageslim
  **/
 
 if (empty($input)) { return; }  // if we've got nothing to do, it's quittin' time
@@ -72,8 +64,10 @@ $remoteTimeout = isset($remoteTimeout) ? (int) $remoteTimeout : 5;
 $q = empty($q) ? '' : (int) $q;
 $imgSrc = empty($imgSrc) ? 'src' : $imgSrc;
 $debug = isset($debug) ? (bool) $debug : FALSE;
+$useResizer = isset($useResizer) ? $useResizer : $modx->getOption('imageslim.use_resizer', NULL, TRUE);
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.1.0-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL:" . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
+
+$debug &&   $debugstr = "i m a g e S l i m  [1.1.2-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL: " . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
 $badPath = MODX_BASE_PATH . ltrim(MODX_BASE_URL, '/');  // we'll use this later to weed out duplicate subdirs
@@ -145,7 +139,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		continue;
 	}
 
-	$type = strtolower( substr($size['mime'], strpos( $size['mime'], '/')+1) );  // extract the image type
+	$type = strtolower(substr($size['mime'], strpos($size['mime'], '/') + 1));  // extract the image type
 	$ar = $size[0] / $size[1];  // calculate our intrinsic aspect ratio
 
 	$w = $wCss = 0;  // initialize some stuff we'll need
@@ -158,11 +152,11 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		$styles = array();
 		preg_match_all('/([\w-]+)\s*:\s*([^;]+)\s*;?/', $styleAttr, $matches, PREG_SET_ORDER);
 		foreach ($matches as $match) { $styles[$match[1]] = $match[2]; }  // bust everything out into an array
-		if ( isset($styles['width']) && stripos($styles['width'], 'px') ) {  // if we have a width in pixels
+		if (isset($styles['width']) && stripos($styles['width'], 'px')) {  // if we have a width in pixels
 			preg_match('/\d+/', $styles['width'], $matches);
 			$wCss = $matches[0];  // get just the value
 		}
-		if ( isset($styles['height']) && stripos($styles['height'], 'px') ) {  // same deal for height
+		if (isset($styles['height']) && stripos($styles['height'], 'px')) {  // same deal for height
 			preg_match('/\d+/', $styles['height'], $matches);
 			$hCss = $matches[0];
 		}
@@ -174,7 +168,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	$aspectNeedsFix = FALSE;  // let's see if we need to fix a stretched image
 	if ($fixAspect && $w && $h) {
 		$new_ar = $w / $h;
-		if ( abs($new_ar - $ar) > 0.01 ) {  // allow a little discrepancy, but nothing crazy
+		if (abs($new_ar - $ar) > 0.01) {  // allow a little discrepancy, but nothing crazy
 			$aspectNeedsFix = TRUE;
 			$ar = $new_ar;
 			$maxScale = min($scale, $size[0] / $w, $size[1] / $h);
@@ -188,8 +182,8 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	}
 
 	$heightPlay = 0;  // used to prevent height resizing on a 1px rounding difference
-	if ( $w && ($w > $maxWidth || $size[0] > $w * $scale)  ||  $size[0] > $maxWidth * $scale ) {
-		$wMax = $scale * ($w ? ( $w < $maxWidth ? $w : $maxWidth ) : $maxWidth);
+	if ($w && ($w > $maxWidth || $size[0] > $w * $scale)  ||  $size[0] > $maxWidth * $scale) {
+		$wMax = $scale * ($w ? ($w < $maxWidth ? $w : $maxWidth) : $maxWidth);
 		$wMax = $wMax > $size[0] ? $size[0] : $wMax;
 		$opts['w'] = $wMax;
 		$newH = $size[1] < $wMax/$ar ? $size[1] : $wMax / $ar;
@@ -208,8 +202,8 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 	}
 
-	if ( $h && ($h > $maxHeight || $size[1] - $heightPlay > $h * $scale)  ||  $size[1] - $heightPlay > $maxHeight * $scale ) {
-		$hMax = $scale * ($h ? ( $h < $maxHeight ? $h : $maxHeight ) : $maxHeight);
+	if ($h && ($h > $maxHeight || $size[1] - $heightPlay > $h * $scale)  ||  $size[1] - $heightPlay > $maxHeight * $scale) {
+		$hMax = $scale * ($h ? ($h < $maxHeight ? $h : $maxHeight) : $maxHeight);
 		$hMax = $hMax > $size[1] ? $size[1] : $hMax;
 		$opts['h'] = $hMax;
 		if ($aspectNeedsFix)  {
@@ -252,13 +246,15 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 
 	if (!empty($opts)) {  // have we anything to do for this lovely image?
 		if ($aspectNeedsFix)  { $opts['zc'] = 1; }
-		if ( !isset($opts['f']) ) {  // if output file type isn't user specified...
+		if (!isset($opts['f'])) {  // if output file type isn't user specified...
 			$opts['f'] = ($type === 'jpeg' ? 'jpeg' : 'png');  // if it's a gif or bmp let's just make it a png, shall we?
 		}
 		if ($q && $opts['f'] === 'jpeg')  { $opts['q'] = $q; }  // add user-specified jpeg quality if it's relevant
 		if ($opts['f'] === 'jpeg') { $opts['f'] = 'jpg'; }  // workaround for phpThumbOf issue #53
-		$image = array();
-		$image['input'] = $file;
+		$image = array(
+			'input' => $file,
+			'useResizer' => $useResizer
+		);
 		$option_str = '';
 		foreach ($opts as $k => $v)  {  // turn our phpthumb options array back into a string
 			if (is_array($v)) {  // handle any array options like fltr[]
@@ -268,7 +264,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 		$image['options'] = rtrim($option_str, '&');
 		$debug &&   $debugstr .= "phpthumbof options: {$image['options']}\n";
-		$node->setAttribute( $imgSrc, $modx->runSnippet('phpthumbof', $image) );  // do the business and set the src
+		$node->setAttribute($imgSrc, $modx->runSnippet('phpthumbof', $image));  // do the business and set the src
 		if ($updateStyles) {
 			$style = '';
 			foreach($styles as $k => $v) { $style .= "$k:$v;"; }  // turn $styles array into an inline style string
