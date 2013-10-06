@@ -29,7 +29,11 @@
 /* Set package info be sure to set all of these */
 define('PKG_NAME','imageSlim');
 define('PKG_NAME_LOWER','imageslim');
+<<<<<<< HEAD
 define('PKG_VERSION','1.1.1');
+=======
+define('PKG_VERSION','1.1.2');
+>>>>>>> dev
 define('PKG_RELEASE','pl');
 define('PKG_CATEGORY','imageSlim');
 
@@ -46,7 +50,7 @@ $hasValidator = true; /* Run a validator before installing anything */
 $hasResolver = false; /* Run a resolver after installing everything */
 $hasSetupOptions = false; /* HTML/PHP script to interact with user */
 $hasMenu = false; /* Add items to the MODx Top Menu */
-$hasSettings = false; /* Add new MODx System Settings */
+$hasSettings = true; /* Add new MODx System Settings */
 
 /* Note: TVs are connected to their templates in the script resolver
  * (see _build/data/resolvers/install.script.php)

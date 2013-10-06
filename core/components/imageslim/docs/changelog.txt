@@ -1,8 +1,24 @@
 Changelog for imageSlim
 
+<<<<<<< HEAD
 1.1.1-pl [22.08.2013]
 ---------------------
 
+=======
+1.1.2-pl [06.10.2013]
+---------------------
+
+- Improve identification and handling of remote images
+- [#6] Fix handling of empty <textarea></textarea> tags
+- Add a use_resizer setting/property for enabling Resizer independent
+  of the site-wide setting. imageSlim will use Resizer by default if
+  pThumb is installed.
+
+
+1.1.1-pl [22.08.2013]
+---------------------
+
+>>>>>>> dev
 - [#5] If MODX is installed in a subdirectory, keep the subdirectory
   name from incorrectly occurring twice in the path.
 - On remote images, add a protocol to any protocol-relative URLs to

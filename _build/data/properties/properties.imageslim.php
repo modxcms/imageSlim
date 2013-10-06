@@ -106,3 +106,4 @@ $properties = array(
 );
 
 return $properties;
+
