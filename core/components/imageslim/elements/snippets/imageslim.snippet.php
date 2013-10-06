@@ -91,7 +91,12 @@ foreach (array('iframe', 'video', 'audio', 'textarea') as $tag) {  // prevent ce
 foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 	$src = $node->getAttribute($imgSrc);
 	$file = $size = FALSE;
-	if ( preg_match('/^(?:https?:)?\/\/(.+?)\/(.+)/i', $src, $matches) ) {  // if we've got a remote image to work with
+	$isRemote = preg_match('/^(?:https?:)?\/\/((?:.+?)\.(?:.+?))\/(.+)/i', $src, $matches);  // check for absolute URLs
+	if ($isRemote && MODX_HTTP_HOST === strtolower($matches[1])) {  // if it's the same server we're running on
+		$isRemote = FALSE;  // then it's not really remote
+		$src = $matches[2];  // we just need the path and filename
+	}
+	if ($isRemote) {  // if we've got a real remote image to work with
 		if (!$remoteImages) {
 			$debug &&   $debugstr .= "\nsrc:$src\n*** Remote image not allowed. Skipping ***\n";
 			continue;
@@ -105,6 +110,9 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 				continue;
 			}
 			$curlFail = FALSE;
+			if ($src[0] === '/') {  //cURL doesn't like protocol-relative URLs, so add http or https
+    			$src = (empty($_SERVER['HTTPS']) ? 'http:' : 'https:') . $src;
+			}
 			$ch = curl_init($src);
 			curl_setopt_array($ch, array(
 				CURLOPT_TIMEOUT	=> $remoteTimeout,
@@ -125,7 +133,7 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 		}
 		elseif ($debug) { $debugstr .= "Retrieved from cache: $file\n";}
 	}
-	else {
+	else {  // it's a local file
 		$file = MODX_BASE_PATH . rawurldecode(ltrim($src, '/'));  // Fix spaces and other encoded characters in the URL
 		$file = str_replace($badPath, MODX_BASE_PATH, $file);  // if MODX is in a subdir, keep this subdir name from occuring twice
 		$debug &&   $debugstr .= "\nsrc:$file\n";
