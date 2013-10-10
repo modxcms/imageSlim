@@ -271,6 +271,9 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			$node->setAttribute('style', $style);
 		}
 	}
+	elseif ($isRemote) {  // remote image but doesn't need any changes
+		$node->setAttribute($imgSrc, str_replace(MODX_ASSETS_PATH, MODX_ASSETS_URL, $file));  // use the locally cached version since we've already got it
+	}
 }
 
 $output = str_replace('&#13;', '', substr($dom->saveXML($dom->documentElement), 12, -14) );  // strip off the <body> tags and CR characters that DOM adds (?)
