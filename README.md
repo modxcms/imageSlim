@@ -77,11 +77,11 @@ Options
 </tr><tr>
   <td>&amp;fixAspect</td>
   <td>If an image is being stretched, fix it by keeping its display dimensions and zoom cropping the image to display dimensions * &amp;scale.<br>Stretching occurs when its display aspect ratio is different from its natural aspect ratio (i.e. sombody unchecked 'Constrain proportions').</td>
-  <td>Yes</td>
+  <td>1 (Yes)</td>
 </tr><tr>
   <td>&amp;remoteImages</td>
-  <td>Allow imageSlim to work with images from other servers.<br>Requires cURL and proper settings for phpthumb_nohotlink_enabled and phpthumb_nohotlink_valid_domains in the MODX system settings (core > phpthumb)<br>Remote images take longer to process than local ones obviously, but imageSlim does cache them locally in assets/components/imageslim/cache/, so it's only a one-time performance hit.</td>
-  <td>No</td>
+  <td>Allow imageSlim to operate on images from other servers (requires cURL). Because imageSlim first downloads any remote images and caches them in assets/components/imageslim/cache/ it’s able to bypass phpThumb’s offsite linking and hotlinking settings.  Plus it makes the performance hit on offsite images a one-time thing; on subsequent runs there’s no speed decrease since the images are cached locally.</td>
+  <td>0 (No)</td>
  </tr><tr>
   <td>&amp;remoteTimeout</td>
   <td>Maximum amount of time to allow for a remote image download.<br>Units: seconds</td>
@@ -98,7 +98,7 @@ Options
   <td></td>
 </tr><tr><td>&amp;debug</td>
   <td>Output debug info in an HTML comment.</td>
-  <td>No</td>
+  <td>0 (No)</td>
 </tr><tr><td>&amp;useResizer</td>
   <td>See the corresponding setting below.</td>
   <td></td>
