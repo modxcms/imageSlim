@@ -1,4 +1,4 @@
-imageSlim 1.1.2-pl
+imageSlim 1.1.3-pl
 ===============
 
 The Image Slenderizer, for MODX.

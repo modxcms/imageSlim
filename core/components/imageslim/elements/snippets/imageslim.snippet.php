@@ -67,7 +67,7 @@ $debug = isset($debug) ? (bool) $debug : FALSE;
 $useResizer = isset($useResizer) ? $useResizer : $modx->getOption('imageslim.use_resizer', NULL, TRUE);
 
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.1.2-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL: " . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.1.3-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL: " . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
 $badPath = MODX_BASE_PATH . ltrim(MODX_BASE_URL, '/');  // we'll use this later to weed out duplicate subdirs
@@ -75,10 +75,9 @@ $remoteDomains = FALSE;
 $dom = new DOMDocument;
 @$dom->loadHTML('<?xml encoding="UTF-8">' . $input);  // load this mother up
 
-$emptynode = $dom->createTextNode('');
 foreach (array('iframe', 'video', 'audio', 'textarea') as $tag) {  // prevent certain tags from getting turned into self-closing tags by domDocument
 	foreach ($dom->getElementsByTagName($tag) as $node) {
-		$node->appendChild($emptynode);
+		$node->appendChild($dom->createTextNode(''));
 	}
 }
 
@@ -270,6 +269,9 @@ foreach ($dom->getElementsByTagName('img') as $node) {  // for all our images
 			foreach($styles as $k => $v) { $style .= "$k:$v;"; }  // turn $styles array into an inline style string
 			$node->setAttribute('style', $style);
 		}
+	}
+	elseif ($isRemote) {  // remote image but doesn't need any changes
+		$node->setAttribute($imgSrc, str_replace(MODX_ASSETS_PATH, MODX_ASSETS_URL, $file));  // use the locally cached version since we've already got it
 	}
 }
 

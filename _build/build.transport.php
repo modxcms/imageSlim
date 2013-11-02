@@ -29,7 +29,7 @@
 /* Set package info be sure to set all of these */
 define('PKG_NAME','imageSlim');
 define('PKG_NAME_LOWER','imageslim');
-define('PKG_VERSION','1.1.2');
+define('PKG_VERSION','1.1.3');
 define('PKG_RELEASE','pl');
 define('PKG_CATEGORY','imageSlim');
 
