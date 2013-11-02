@@ -67,7 +67,7 @@ $debug = isset($debug) ? (bool) $debug : FALSE;
 $useResizer = isset($useResizer) ? $useResizer : $modx->getOption('imageslim.use_resizer', NULL, TRUE);
 
 
-$debug &&   $debugstr = "i m a g e S l i m  [1.1.2-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL: " . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
+$debug &&   $debugstr = "i m a g e S l i m  [1.1.3-pl]\nimgSrc:$imgSrc  scale:$scale  convertThreshold:" . ($convertThreshold ? $convertThreshold / 1024 . 'KB' : 'none') . "\nmaxWidth:$maxWidth  maxHeight:$maxHeight  q:$q\nfixAspect:$fixAspect  phpthumbof:$phpthumbof\nRemote images:$remoteImages  Timeout:$remoteTimeout  cURL: " . (!function_exists('curl_init') ? 'not ':'') . "installed\n";
 
 $cachePath = MODX_ASSETS_PATH . 'components/imageslim/cache/';
 $badPath = MODX_BASE_PATH . ltrim(MODX_BASE_URL, '/');  // we'll use this later to weed out duplicate subdirs
