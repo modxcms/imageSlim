@@ -26,7 +26,7 @@ Features
 Requirements
 ------------
 
-* Either [pThumb](http://modx.com/extras/package/pthumb) or [phpThumbOf](http://modx.com/extras/package/phpthumbof). I recommend pThumb since it’s fully compatible with phpThumbOf, _much_ faster, and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
+* Either [pThumb](http://modx.com/extras/package/pthumb) or phpThumbOf. I recommend pThumb since it’s fully compatible with phpThumbOf, _much_ faster, and eliminates some [potential problems](#phpthumbof-notes) caused by phpThumbOf bugs.
 * PHP: [DOM Extension](http://www.php.net/manual/en/book.dom.php). imageSlim’s installer will tell you whether your server has it. Most do.
 * cURL (for remote images). If you can download imageSlim via the Package Manager, you have cURL.
 
@@ -132,9 +132,9 @@ Notes
 * _CSS_ – imageSlim only works with inline CSS. If you're affecting image sizes somewhere else in your CSS, it won't see that. Also if the dimensions in the inline CSS are given in a unit other than pixels (% or em, for instance) it'll ignore those, since it'd be potentially quite involved to translate those values into pixels.
 * _Resizing_ – If imageSlim needs to change the display size of an image, it'll use the same method as the image initially had (either inline CSS or \<img\> tag attributes).
 * _Vector graphics_ – imageSlim knows better than to mess with SVG. There's no point!
-* _Caching_ - Please don't do this: ```[[!imageSlim? &input=`...`]]``` (that is, call it uncached), especially on an area which might have more than a few images.  I spent a bunch of time making imageSlim as light and efficient as possible, but phpthumb is a lumbering beast. Though phpthumb does cache its output, so after the first run it only has to regenerate images when the filename, or parameters (or resource) changes, or you go to Site > Clear Cache in the Manager.
 * _Image formats_ – imageSlim will convert any non-jpegs (gifs, bmps, tiffs, etc) it has to resize into pngs by default.
 * _Stretched images_ – if you have &amp;fixAspect on, imageSlim will fix them _if_ it has enough resolution to work with. If the display size exceeds the natural size, it's not going to interpolate images up to fix the aspect ratio.  However if the image is being sized down because of &amp;maxWidth or &amp;maxHeight, imageSlim will still try to fix it, even lowering the scale some if it needs to (just not lower than 1).
+* _HTML5_ — imageSlim uses PHP’s DOM extension to parse the input and look for images.  DOM is an XML parser; PHP doesn’t have a built-in HTML/HTML5 parser.  Mostly it works fine for HTML, but there are a few discrepencies which can sometimes surface, usually when you’re feeding it content not coming from a rich-text editor like TinyMCE.  Be aware that it always outputs a syntacticly correct XHTML fragment. If you’ve got a tag left open it will close it, or if you’re using a purely HTML5 construct like a boolean attribute then it’ll tweak it (the same way that TinyMCE would).
 
 phpThumbOf Notes
 -----------------
