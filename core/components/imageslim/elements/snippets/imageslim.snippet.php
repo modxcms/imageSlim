@@ -49,7 +49,8 @@
 if (empty($input)) { return; }  // if we've got nothing to do, it's quittin' time
 
 if (isset($options)) {  // if we're being called as an output filter, set variables for any options
-	parse_str($options);
+	parse_str($options, $arrout);
+	return $arrout;
 }
 
 // process our properties
